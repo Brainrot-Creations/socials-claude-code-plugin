@@ -82,28 +82,6 @@ function resolvedAmcApiUrl() {
   return commonApiServerBaseUrl();
 }
 
-/** Browser session cookie for Queue-it / seats fetch (`X-Amc-Cookie`). */
-function resolvedAmcCookie() {
-  return getEnv("AMC_COOKIE") || getEnv("AMC_API_COOKIE");
-}
-
-function sanitizeCookie(raw) {
-  return (raw || "").trim();
-}
-
-function setStoredAmcCookie(cookieValue) {
-  const cookie = sanitizeCookie(cookieValue);
-  persistentConfig.AMC_COOKIE = cookie;
-  savePersistentConfig();
-  return cookie;
-}
-
-function clearStoredAmcCookie() {
-  delete persistentConfig.AMC_COOKIE;
-  delete persistentConfig.AMC_API_COOKIE;
-  savePersistentConfig();
-}
-
 function amcBaseUrl() {
   const u = resolvedAmcApiUrl();
   if (u) return u;
@@ -125,8 +103,6 @@ async function amcGet(pathname, query) {
   const headers = { Accept: "application/json" };
   const apiKey = commonApiServerKey();
   if (apiKey) headers["X-API-Key"] = apiKey;
-  const cookie = resolvedAmcCookie();
-  if (cookie) headers["X-Amc-Cookie"] = cookie;
   const resp = await fetch(u, { method: "GET", headers });
   const text = await resp.text();
   let data;
@@ -153,119 +129,8 @@ function asTextContent(payload) {
 const server = new McpServer({ name: "amc-api", version: "0.1.0" });
 
 server.tool(
-  "amc_cookie_set",
-  "Store AMC cookie in ~/.config/amc-api/env.json so AMC API tools automatically send X-Amc-Cookie.",
-  {
-    cookie: z.string().min(1),
-  },
-  async ({ cookie }) => {
-    try {
-      const stored = setStoredAmcCookie(cookie);
-      return asTextContent({
-        ok: true,
-        stored: true,
-        config_path: CONFIG_PATH,
-        cookie_length: stored.length,
-        hint: "amc_theatres/amc_showtimes/amc_seats will now auto-send X-Amc-Cookie when no process env override is set.",
-      });
-    } catch (error) {
-      return asTextContent({ ok: false, error: String(error) });
-    }
-  },
-);
-
-server.tool(
-  "amc_cookie_get",
-  "Show whether an AMC cookie is currently configured (without printing full secret).",
-  {},
-  async () => {
-    try {
-      const cookie = resolvedAmcCookie();
-      return asTextContent({
-        ok: true,
-        configured: Boolean(cookie),
-        source: process.env.AMC_COOKIE
-          ? "process.env.AMC_COOKIE"
-          : process.env.AMC_API_COOKIE
-            ? "process.env.AMC_API_COOKIE"
-            : persistentConfig.AMC_COOKIE
-              ? CONFIG_PATH
-              : null,
-        cookie_length: cookie ? cookie.length : 0,
-      });
-    } catch (error) {
-      return asTextContent({ ok: false, error: String(error) });
-    }
-  },
-);
-
-server.tool(
-  "amc_cookie_clear",
-  "Remove stored AMC cookie from ~/.config/amc-api/env.json.",
-  {},
-  async () => {
-    try {
-      clearStoredAmcCookie();
-      return asTextContent({
-        ok: true,
-        cleared: true,
-        config_path: CONFIG_PATH,
-      });
-    } catch (error) {
-      return asTextContent({ ok: false, error: String(error) });
-    }
-  },
-);
-
-server.tool(
-  "amc_cookie_capture",
-  "Run local getcookies.py for a domain (default amctheatres.com), then store it for automatic AMC API calls.",
-  {
-    domain: z.string().min(1).optional(),
-    script_path: z.string().optional(),
-  },
-  async ({ domain, script_path }) => {
-    const resolvedDomain = (domain || "amctheatres.com").trim();
-    const script = (script_path || process.env.AMC_COOKIE_SCRIPT || GETCOOKIES_FALLBACK_PATH).trim();
-    try {
-      const { stdout, stderr } = await execFileAsync("python3", [script, resolvedDomain], {
-        timeout: 15_000,
-        maxBuffer: 2 * 1024 * 1024,
-      });
-      const cookie = sanitizeCookie(stdout);
-      if (!cookie) {
-        return asTextContent({
-          ok: false,
-          error: "cookie capture returned empty output",
-          script,
-          domain: resolvedDomain,
-          stderr: sanitizeCookie(stderr) || null,
-        });
-      }
-      const stored = setStoredAmcCookie(cookie);
-      return asTextContent({
-        ok: true,
-        captured: true,
-        stored: true,
-        domain: resolvedDomain,
-        script,
-        config_path: CONFIG_PATH,
-        cookie_length: stored.length,
-      });
-    } catch (error) {
-      return asTextContent({
-        ok: false,
-        error: String(error),
-        script,
-        domain: resolvedDomain,
-      });
-    }
-  },
-);
-
-server.tool(
   "amc_theatres",
-  "Theatre search / listing from GET /api/amc/theatres (JSON under `data`). Optional `X-Amc-Cookie` via AMC_COOKIE when Queue-it blocks.",
+  "Search AMC theatres by zip code or city name.",
   {
     q: z.string().optional(),
     page_url: z.string().url().optional(),
@@ -289,7 +154,7 @@ server.tool(
 
 server.tool(
   "amc_showtimes",
-  "Venue or movie showtimes via AMC GraphQL. Pass `url`, or `slug` (e.g. 'amc-kips-bay-15'), or `region`+`slug`; optional `date` (YYYY-MM-DD), `movie` name filter, `premium_offering`. Reads Chrome cookies automatically. Requires tls-client and browser-cookie3 Python packages.",
+  "Showtimes for a theatre or movie. Pass `slug` (e.g. 'amc-kips-bay-15') with optional `date` (YYYY-MM-DD), `movie` name filter, or `premium_offering`.",
   {
     url: z.string().url().optional(),
     region: z.string().min(1).optional(),
@@ -311,7 +176,7 @@ server.tool(
 
 server.tool(
   "amc_seats",
-  "Seat map for a numeric AMC showtime id via GraphQL. Auto-fetches cookie from browser. Requires tls-client and browser-cookie3 Python packages. Response includes seat_map_url — send that URL as a standalone iMessage so the preview image renders.",
+  "Seat map for a numeric AMC showtime id. Response includes seat_map_url — send that URL as a standalone iMessage so the preview image renders.",
   {
     showtime_id: z.number().int().positive(),
     timeout: z.number().positive().max(120).optional(),

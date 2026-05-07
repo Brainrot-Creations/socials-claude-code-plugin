@@ -21063,7 +21063,7 @@ var StdioServerTransport = class {
 };
 
 // index.js
-var DEFAULT_AMC_PROXY_BASE = "https://api.shubhthorat.com";
+var DEFAULT_AMC_PROXY_BASE = "https://api.brainrotcreations.com";
 var CONFIG_DIR = join(homedir(), ".config", "amc-api");
 var CONFIG_PATH = join(CONFIG_DIR, "env.json");
 var GETCOOKIES_FALLBACK_PATH = join(
@@ -21076,6 +21076,12 @@ var GETCOOKIES_FALLBACK_PATH = join(
 var execFileAsync = promisify(execFile);
 var __dirname = dirname(fileURLToPath(import.meta.url));
 var FETCH_SHOWTIMES_PY = join(__dirname, "..", "tools", "fetch_showtimes.py");
+var FETCH_SEATS_PY = join(__dirname, "..", "tools", "fetch_seats.py");
+async function fetchSeatsLocal(showtime_id, timeout) {
+  const ms = (timeout ?? 60) * 1e3;
+  const { stdout } = await execFileAsync("python3", [FETCH_SEATS_PY, "--showtime-id", String(showtime_id)], { timeout: ms });
+  return JSON.parse(stdout.trim());
+}
 async function fetchShowtimesLocal(args) {
   const pyArgs = [];
   if (args.slug) pyArgs.push("--slug", args.slug);
@@ -21096,11 +21102,6 @@ function loadPersistentConfig() {
   }
 }
 var persistentConfig = loadPersistentConfig();
-function savePersistentConfig() {
-  mkdirSync(CONFIG_DIR, { recursive: true });
-  writeFileSync(CONFIG_PATH, `${JSON.stringify(persistentConfig, null, 2)}
-`, "utf8");
-}
 function getEnv(name) {
   return (process.env[name] || persistentConfig[name] || "").trim();
 }
@@ -21118,23 +21119,6 @@ function resolvedAmcApiUrl() {
   const specific = getEnv("AMC_API_URL");
   if (specific) return specific.replace(/\/$/, "");
   return commonApiServerBaseUrl();
-}
-function resolvedAmcCookie() {
-  return getEnv("AMC_COOKIE") || getEnv("AMC_API_COOKIE");
-}
-function sanitizeCookie(raw) {
-  return (raw || "").trim();
-}
-function setStoredAmcCookie(cookieValue) {
-  const cookie = sanitizeCookie(cookieValue);
-  persistentConfig.AMC_COOKIE = cookie;
-  savePersistentConfig();
-  return cookie;
-}
-function clearStoredAmcCookie() {
-  delete persistentConfig.AMC_COOKIE;
-  delete persistentConfig.AMC_API_COOKIE;
-  savePersistentConfig();
 }
 function amcBaseUrl() {
   const u = resolvedAmcApiUrl();
@@ -21156,8 +21140,6 @@ async function amcGet(pathname, query) {
   const headers = { Accept: "application/json" };
   const apiKey = commonApiServerKey();
   if (apiKey) headers["X-API-Key"] = apiKey;
-  const cookie = resolvedAmcCookie();
-  if (cookie) headers["X-Amc-Cookie"] = cookie;
   const resp = await fetch(u, { method: "GET", headers });
   const text = await resp.text();
   let data;
@@ -21181,109 +21163,8 @@ function asTextContent(payload) {
 }
 var server = new McpServer({ name: "amc-api", version: "0.1.0" });
 server.tool(
-  "amc_cookie_set",
-  "Store AMC cookie in ~/.config/amc-api/env.json so AMC API tools automatically send X-Amc-Cookie.",
-  {
-    cookie: external_exports.string().min(1)
-  },
-  async ({ cookie }) => {
-    try {
-      const stored = setStoredAmcCookie(cookie);
-      return asTextContent({
-        ok: true,
-        stored: true,
-        config_path: CONFIG_PATH,
-        cookie_length: stored.length,
-        hint: "amc_theatres/amc_showtimes/amc_seats will now auto-send X-Amc-Cookie when no process env override is set."
-      });
-    } catch (error2) {
-      return asTextContent({ ok: false, error: String(error2) });
-    }
-  }
-);
-server.tool(
-  "amc_cookie_get",
-  "Show whether an AMC cookie is currently configured (without printing full secret).",
-  {},
-  async () => {
-    try {
-      const cookie = resolvedAmcCookie();
-      return asTextContent({
-        ok: true,
-        configured: Boolean(cookie),
-        source: process.env.AMC_COOKIE ? "process.env.AMC_COOKIE" : process.env.AMC_API_COOKIE ? "process.env.AMC_API_COOKIE" : persistentConfig.AMC_COOKIE ? CONFIG_PATH : null,
-        cookie_length: cookie ? cookie.length : 0
-      });
-    } catch (error2) {
-      return asTextContent({ ok: false, error: String(error2) });
-    }
-  }
-);
-server.tool(
-  "amc_cookie_clear",
-  "Remove stored AMC cookie from ~/.config/amc-api/env.json.",
-  {},
-  async () => {
-    try {
-      clearStoredAmcCookie();
-      return asTextContent({
-        ok: true,
-        cleared: true,
-        config_path: CONFIG_PATH
-      });
-    } catch (error2) {
-      return asTextContent({ ok: false, error: String(error2) });
-    }
-  }
-);
-server.tool(
-  "amc_cookie_capture",
-  "Run local getcookies.py for a domain (default amctheatres.com), then store it for automatic AMC API calls.",
-  {
-    domain: external_exports.string().min(1).optional(),
-    script_path: external_exports.string().optional()
-  },
-  async ({ domain, script_path }) => {
-    const resolvedDomain = (domain || "amctheatres.com").trim();
-    const script = (script_path || process.env.AMC_COOKIE_SCRIPT || GETCOOKIES_FALLBACK_PATH).trim();
-    try {
-      const { stdout, stderr } = await execFileAsync("python3", [script, resolvedDomain], {
-        timeout: 15e3,
-        maxBuffer: 2 * 1024 * 1024
-      });
-      const cookie = sanitizeCookie(stdout);
-      if (!cookie) {
-        return asTextContent({
-          ok: false,
-          error: "cookie capture returned empty output",
-          script,
-          domain: resolvedDomain,
-          stderr: sanitizeCookie(stderr) || null
-        });
-      }
-      const stored = setStoredAmcCookie(cookie);
-      return asTextContent({
-        ok: true,
-        captured: true,
-        stored: true,
-        domain: resolvedDomain,
-        script,
-        config_path: CONFIG_PATH,
-        cookie_length: stored.length
-      });
-    } catch (error2) {
-      return asTextContent({
-        ok: false,
-        error: String(error2),
-        script,
-        domain: resolvedDomain
-      });
-    }
-  }
-);
-server.tool(
   "amc_theatres",
-  "Theatre search / listing from GET /api/amc/theatres (JSON under `data`). Optional `X-Amc-Cookie` via AMC_COOKIE when Queue-it blocks.",
+  "Search AMC theatres by zip code or city name.",
   {
     q: external_exports.string().optional(),
     page_url: external_exports.string().url().optional(),
@@ -21306,7 +21187,7 @@ server.tool(
 );
 server.tool(
   "amc_showtimes",
-  "Venue or movie showtimes via AMC GraphQL. Pass `url`, or `slug` (e.g. 'amc-kips-bay-15'), or `region`+`slug`; optional `date` (YYYY-MM-DD), `movie` name filter, `premium_offering`. Reads Chrome cookies automatically. Requires tls-client and browser-cookie3 Python packages.",
+  "Showtimes for a theatre or movie. Pass `slug` (e.g. 'amc-kips-bay-15') with optional `date` (YYYY-MM-DD), `movie` name filter, or `premium_offering`.",
   {
     url: external_exports.string().url().optional(),
     region: external_exports.string().min(1).optional(),
@@ -21327,19 +21208,16 @@ server.tool(
 );
 server.tool(
   "amc_seats",
-  "Seat map for a numeric AMC showtime id: GET /api/amc/seats/{id}. Requires AMC_COOKIE (or server AMC_COOKIE) for live fetch.",
+  "Seat map for a numeric AMC showtime id. Response includes seat_map_url \u2014 send that URL as a standalone iMessage so the preview image renders.",
   {
     showtime_id: external_exports.number().int().positive(),
     timeout: external_exports.number().positive().max(120).optional()
   },
   async ({ showtime_id, timeout }) => {
     try {
-      const q = {};
-      if (timeout !== void 0) q.timeout = timeout;
-      const data = await amcGet(
-        `/api/amc/seats/${encodeURIComponent(String(showtime_id))}`,
-        q
-      );
+      const data = await fetchSeatsLocal(showtime_id, timeout);
+      const base = amcBaseUrl().includes("localhost") ? amcBaseUrl() : "https://api.brainrotcreations.com";
+      data.seat_map_url = `${base}/api/amc/seats/${showtime_id}`;
       return asTextContent(data);
     } catch (error2) {
       return asTextContent({ ok: false, error: String(error2) });
