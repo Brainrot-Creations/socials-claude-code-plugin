@@ -21015,7 +21015,7 @@ var StdioServerTransport = class {
 };
 
 // index.js
-var DEFAULT_LUMA_PROXY_BASE = "https://api.shubhthorat.com";
+var DEFAULT_LUMA_PROXY_BASE = "https://api.brainrotcreations.com";
 var CONFIG_DIR = join(homedir(), ".config", "luma-api");
 function loadPersistentConfig() {
   try {
