@@ -48,6 +48,13 @@
       "source": "./plugins/amc-theatres",
       "category": "external-integrations",
       "homepage": "https://www.amctheatres.com"
+    },
+    {
+      "name": "codex",
+      "description": "Delegate tasks to OpenAI Codex CLI from Claude. Run coding tasks synchronously or in the background and track their output.",
+      "source": "./plugins/codex",
+      "category": "developer-tools",
+      "homepage": "https://developers.openai.com/codex/cli"
     }
   ]
 }
