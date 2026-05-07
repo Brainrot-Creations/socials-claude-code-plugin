@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "luma-api": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/bundle.js"],
+      "env": {}
+    }
+  }
+}
