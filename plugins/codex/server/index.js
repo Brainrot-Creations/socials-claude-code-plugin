@@ -141,7 +141,7 @@ const TOOLS = [
   {
     name: 'codex_run',
     description:
-      'Run a task with the OpenAI Codex CLI and wait for the result. Use for synchronous sub-tasks where you need the output before continuing. Requires OPENAI_API_KEY or Codex browser auth.',
+      'Run a task with the OpenAI Codex CLI and wait for the result. Use for synchronous sub-tasks where you need the output before continuing. Uses whatever auth Codex already has on the machine (app sign-in or OPENAI_API_KEY).',
     inputSchema: {
       type: 'object',
       properties: {

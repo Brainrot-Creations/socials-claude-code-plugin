@@ -7,10 +7,10 @@ Use the `codex` MCP tools to delegate tasks to OpenAI Codex CLI.
 
 ## Prerequisites
 
-Codex must be installed and authenticated:
+Codex must be installed and signed in:
 ```bash
 npm i -g @openai/codex
-# then either set OPENAI_API_KEY or sign in via browser auth
+# sign in via the Codex app — no API key needed
 ```
 
 ## Synchronous delegation (need result now)
