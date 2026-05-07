@@ -88,6 +88,26 @@ function amcBaseUrl() {
   return DEFAULT_AMC_PROXY_BASE.replace(/\/$/, "");
 }
 
+function resolvedAmcCookie() {
+  return getEnv("AMC_COOKIE") || getEnv("AMC_API_COOKIE");
+}
+
+function sanitizeCookie(raw) {
+  return (raw || "").trim();
+}
+
+function setStoredAmcCookie(value) {
+  persistentConfig.AMC_COOKIE = sanitizeCookie(value);
+  savePersistentConfig();
+  return persistentConfig.AMC_COOKIE;
+}
+
+function clearStoredAmcCookie() {
+  delete persistentConfig.AMC_COOKIE;
+  delete persistentConfig.AMC_API_COOKIE;
+  savePersistentConfig();
+}
+
 async function amcGet(pathname, query) {
   const base = amcBaseUrl();
   const root = base.endsWith("/") ? base : `${base}/`;
@@ -103,6 +123,8 @@ async function amcGet(pathname, query) {
   const headers = { Accept: "application/json" };
   const apiKey = commonApiServerKey();
   if (apiKey) headers["X-API-Key"] = apiKey;
+  const cookie = resolvedAmcCookie();
+  if (cookie) headers["X-Amc-Cookie"] = cookie;
   const resp = await fetch(u, { method: "GET", headers });
   const text = await resp.text();
   let data;
@@ -127,6 +149,70 @@ function asTextContent(payload) {
 }
 
 const server = new McpServer({ name: "amc-api", version: "0.1.0" });
+
+// Optional: store an AMC browser session for personalised results.
+// Not required — all endpoints work without one.
+
+server.tool(
+  "amc_cookie_set",
+  "Optionally store your AMC browser session cookie for personalised results. Not required — all endpoints work without one.",
+  { cookie: z.string().min(1) },
+  async ({ cookie }) => {
+    try {
+      const stored = setStoredAmcCookie(cookie);
+      return asTextContent({ ok: true, stored: true, cookie_length: stored.length });
+    } catch (error) {
+      return asTextContent({ ok: false, error: String(error) });
+    }
+  },
+);
+
+server.tool(
+  "amc_cookie_get",
+  "Check whether an optional AMC session cookie is stored.",
+  {},
+  async () => {
+    try {
+      const cookie = resolvedAmcCookie();
+      return asTextContent({ ok: true, configured: Boolean(cookie), cookie_length: cookie ? cookie.length : 0 });
+    } catch (error) {
+      return asTextContent({ ok: false, error: String(error) });
+    }
+  },
+);
+
+server.tool(
+  "amc_cookie_clear",
+  "Remove a stored AMC session cookie.",
+  {},
+  async () => {
+    try {
+      clearStoredAmcCookie();
+      return asTextContent({ ok: true, cleared: true });
+    } catch (error) {
+      return asTextContent({ ok: false, error: String(error) });
+    }
+  },
+);
+
+server.tool(
+  "amc_cookie_capture",
+  "Capture your AMC session cookie from a running Chrome browser and store it for optional personalised results.",
+  { domain: z.string().min(1).optional() },
+  async ({ domain }) => {
+    const resolvedDomain = (domain || "amctheatres.com").trim();
+    const script = process.env.AMC_COOKIE_SCRIPT || GETCOOKIES_FALLBACK_PATH;
+    try {
+      const { stdout } = await execFileAsync("python3", [script, resolvedDomain], { timeout: 15_000, maxBuffer: 2 * 1024 * 1024 });
+      const cookie = sanitizeCookie(stdout);
+      if (!cookie) return asTextContent({ ok: false, error: "no cookie found in browser" });
+      const stored = setStoredAmcCookie(cookie);
+      return asTextContent({ ok: true, captured: true, cookie_length: stored.length });
+    } catch (error) {
+      return asTextContent({ ok: false, error: String(error) });
+    }
+  },
+);
 
 server.tool(
   "amc_theatres",
