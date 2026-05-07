@@ -12,32 +12,28 @@ const fs = require('fs');
 
 const CODEX_PATH = process.env.CODEX_PATH || 'codex';
 
-// Approval/sandbox defaults — override via env:
-//   CODEX_APPROVAL=never|untrusted  (default: never)
+// Sandbox defaults — override via env:
 //   CODEX_SANDBOX=read-only|workspace-write|danger-full-access  (default: workspace-write)
-//   CODEX_YOLO=1  — pass --dangerously-bypass-approvals-and-sandbox
-const CODEX_YOLO = process.env.CODEX_YOLO === '1';
-const CODEX_APPROVAL = process.env.CODEX_APPROVAL || 'never';
-const CODEX_SANDBOX = process.env.CODEX_SANDBOX || 'workspace-write';
+// Agent automation requires non-interactive mode; dangerously-bypass is used unless CODEX_SANDBOX is set.
+const CODEX_SANDBOX = process.env.CODEX_SANDBOX || null;
 
-function buildCodexArgs(prompt, outFile, extraFlags) {
-  const args = ['exec', prompt, '--output-last-message', outFile];
-  if (CODEX_YOLO) {
-    args.push('--dangerously-bypass-approvals-and-sandbox');
+function buildCodexArgs(prompt, outFile, cwd) {
+  const args = ['exec', prompt, '-o', outFile];
+  if (CODEX_SANDBOX) {
+    args.push('-s', CODEX_SANDBOX);
   } else {
-    args.push('--ask-for-approval', CODEX_APPROVAL);
-    args.push('--sandbox', CODEX_SANDBOX);
+    args.push('--dangerously-bypass-approvals-and-sandbox');
   }
-  if (extraFlags) args.push(...extraFlags);
+  if (cwd) args.push('-C', cwd);
+  args.push('--ephemeral');
   return args;
 }
 
 function runCodexSync(prompt, cwd, timeoutMs) {
   return new Promise((resolve, reject) => {
     const outFile = path.join(os.tmpdir(), `codex-${crypto.randomUUID()}.txt`);
-    const args = buildCodexArgs(prompt, outFile);
+    const args = buildCodexArgs(prompt, outFile, cwd);
     const opts = {
-      cwd: cwd || process.cwd(),
       env: process.env,
       stdio: ['ignore', 'pipe', 'pipe'],
     };
@@ -97,9 +93,8 @@ function submitTask(name, prompt, cwd) {
   };
   tasks.set(id, task);
 
-  const args = buildCodexArgs(prompt, outFile);
+  const args = buildCodexArgs(prompt, outFile, cwd);
   const opts = {
-    cwd: cwd || process.cwd(),
     env: process.env,
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: false,

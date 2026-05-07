@@ -55,11 +55,8 @@ Use `codex_task_submit` to fire off tasks and continue working:
 
 | Variable | Purpose |
 |----------|---------|
-| `OPENAI_API_KEY` | API key for Codex (required unless using browser auth) |
 | `CODEX_PATH` | Override path to the `codex` binary |
-| `CODEX_YOLO=1` | Bypass all approvals and sandbox (fastest, least safe) |
-| `CODEX_APPROVAL` | `never` (default) or `untrusted` |
-| `CODEX_SANDBOX` | `workspace-write` (default), `read-only`, or `danger-full-access` |
+| `CODEX_SANDBOX` | `read-only`, `workspace-write`, or `danger-full-access` — if unset, uses `--dangerously-bypass-approvals-and-sandbox` for headless operation |
 
 ## Writing good prompts for Codex
 
