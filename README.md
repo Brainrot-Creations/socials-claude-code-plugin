@@ -57,6 +57,18 @@ Fast native browser automation for AI agents. Navigate, screenshot, fill forms, 
 
 **Install:** `/plugin install agent-browser@brainrot-creations`
 
+### [AMC Theatres](./plugins/amc-theatres)
+
+Search AMC theatres, get showtimes, and view seat maps. No auth required — works out of the box.
+
+**Install:** `/plugin install amc-theatres@brainrot-creations`
+
+### [Luma Events](./plugins/luma-events)
+
+Browse Luma events — discover, search calendars, and get event details via the Luma public API.
+
+**Install:** `/plugin install luma-events@brainrot-creations`
+
 ---
 
 ## For Developers
@@ -68,6 +80,8 @@ This repo is the plugin marketplace definition — it contains skill files, comm
 | socials | [@brainrotcreations/socials](https://github.com/Brainrot-Creations/socials) |
 | hive | [api.hive.brainrotcreations.com](https://hive.brainrotcreations.com) |
 | agent-browser | [Brainrot-Creations/agent-browser](https://github.com/Brainrot-Creations/agent-browser) |
+| amc-theatres | [api.brainrotcreations.com/api/amc](https://api.brainrotcreations.com) |
+| luma-events | [api.brainrotcreations.com/api/luma](https://api.brainrotcreations.com) |
 
 ---
 
