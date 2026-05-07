@@ -36,16 +36,16 @@
       "homepage": "https://github.com/Brainrot-Creations/cursor-agents"
     },
     {
-      "name": "luma-api",
-      "description": "Luma Discover + events + calendar MCP — public /api/luma/* proxy by default; optional env for self-host.",
-      "source": "./plugins/luma-api",
+      "name": "luma-events",
+      "description": "Luma Discover + events + calendar MCP — browse events near you, by place, category, or calendar. Powered by api.brainrotcreations.com.",
+      "source": "./plugins/luma-events",
       "category": "external-integrations",
       "homepage": "https://luma.com"
     },
     {
-      "name": "amc-api",
-      "description": "AMC theatres / showtimes / seats MCP — showtimes via GraphQL with Chrome TLS fingerprint bypass; seats via api.brainrotcreations.com; optional AMC_COOKIE for seats.",
-      "source": "./plugins/amc-api",
+      "name": "amc-theatres",
+      "description": "AMC theatres, showtimes, and seat maps — find theatres by zip, browse showtimes, and pull live seat availability. Pass X-Amc-Cookie for gated routes.",
+      "source": "./plugins/amc-theatres",
       "category": "external-integrations",
       "homepage": "https://www.amctheatres.com"
     }

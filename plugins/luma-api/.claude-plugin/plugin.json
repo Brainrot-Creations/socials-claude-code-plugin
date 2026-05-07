@@ -1,7 +1,0 @@
-{
-  "name": "luma-api",
-  "description": "Luma Discover + events + calendar MCP — public GET /api/luma/* on api.shubhthorat.com by default; no env required.",
-  "author": {
-    "name": "Shubh Thorat"
-  }
-}

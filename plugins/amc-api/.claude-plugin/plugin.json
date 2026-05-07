@@ -1,7 +1,0 @@
-{
-  "name": "amc-api",
-  "description": "AMC theatres / showtimes / seats MCP — showtimes via GraphQL with Chrome TLS fingerprint bypass; seats via api.shubhthorat.com; optional AMC_COOKIE for seats.",
-  "author": {
-    "name": "Shubh Thorat"
-  }
-}
