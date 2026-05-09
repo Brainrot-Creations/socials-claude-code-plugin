@@ -21206,5 +21206,70 @@ Revised prompt: ${img.revised_prompt}` : "";
     };
   }
 );
+server.tool(
+  "usage",
+  "Check OpenAI API usage and costs for a date range. Requires an API key with api.usage.read scope (not service account keys).",
+  {
+    days: external_exports.number().int().min(1).max(90).optional().default(7).describe("Number of past days to fetch usage for (default: 7, max: 90).")
+  },
+  async ({ days }) => {
+    const key = apiKey();
+    if (!key) throw new Error("OPENAI_API_KEY is not set.");
+    const startTime = Math.floor(Date.now() / 1e3) - days * 86400;
+    const costsResp = await fetch(
+      `https://api.openai.com/v1/organization/costs?start_time=${startTime}&limit=100`,
+      { headers: { Authorization: `Bearer ${key}`, Accept: "application/json" } }
+    );
+    const costsText = await costsResp.text();
+    let costsData;
+    try {
+      costsData = JSON.parse(costsText);
+    } catch {
+      costsData = { _raw: costsText };
+    }
+    if (!costsResp.ok) {
+      const msg = costsData?.error ?? costsText;
+      if (typeof msg === "string" && msg.includes("api.usage.read")) {
+        return {
+          content: [{
+            type: "text",
+            text: `\u274C Usage data requires an API key with the \`api.usage.read\` scope.
+
+The current key (service account) doesn't have this permission.
+
+To fix:
+1. Go to https://platform.openai.com/api-keys
+2. Create a new key with "Usage (read)" permission enabled
+3. Update OPENAI_API_KEY in ~/.config/openai-mcp/env.json
+
+Alternatively, view usage directly at: https://platform.openai.com/usage`
+          }]
+        };
+      }
+      throw new Error(`OpenAI costs API error: ${JSON.stringify(msg)}`);
+    }
+    const buckets = costsData?.data ?? [];
+    if (!buckets.length) {
+      return { content: [{ type: "text", text: `No usage data found for the past ${days} days.` }] };
+    }
+    let totalCents = 0;
+    const lines = buckets.map((b) => {
+      const cost = b.results?.[0]?.amount?.value ?? 0;
+      totalCents += cost;
+      const date3 = new Date(b.start_time * 1e3).toISOString().slice(0, 10);
+      return `${date3}: $${cost.toFixed(4)}`;
+    });
+    return {
+      content: [{
+        type: "text",
+        text: `OpenAI usage \u2014 last ${days} days:
+
+${lines.join("\n")}
+
+Total: $${totalCents.toFixed(4)}`
+      }]
+    };
+  }
+);
 var transport = new StdioServerTransport();
 await server.connect(transport);
