@@ -55,6 +55,13 @@
       "source": "./plugins/codex",
       "category": "developer-tools",
       "homepage": "https://developers.openai.com/codex/cli"
+    },
+    {
+      "name": "openai",
+      "description": "OpenAI API plugin — chat completions (GPT-4o, o1, o3-mini) and DALL-E image generation. Requires OPENAI_API_KEY.",
+      "source": "./plugins/openai",
+      "category": "external-integrations",
+      "homepage": "https://platform.openai.com/docs"
     }
   ]
 }
