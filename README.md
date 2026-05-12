@@ -22,8 +22,9 @@ In Claude Code:
 Then install individual plugins:
 
 ```
+/plugin install amc-theatres@brainrot-creations
+/plugin install luma-events@brainrot-creations
 /plugin install socials@brainrot-creations
-/plugin install hive@brainrot-creations
 /plugin install agent-browser@brainrot-creations
 ```
 
@@ -35,6 +36,18 @@ Then install individual plugins:
 
 ## Plugins
 
+### [AMC Theatres](./plugins/amc-theatres)
+
+Search AMC theatres, get showtimes, and view real-time seat maps. No auth required — works out of the box.
+
+**Install:** `/plugin install amc-theatres@brainrot-creations`
+
+### [Luma Events](./plugins/luma-events)
+
+Browse Luma events near you — discover by city, category, or calendar via the Luma public API.
+
+**Install:** `/plugin install luma-events@brainrot-creations`
+
 ### [Socials](./plugins/socials)
 
 <p>
@@ -45,29 +58,11 @@ Connect Claude to X, LinkedIn, and Reddit via the Socials browser extension. Pos
 
 **Install:** `/plugin install socials@brainrot-creations`
 
-### [Hive](./plugins/hive)
-
-Collective browser automation intelligence. Pull known interaction methods before acting, contribute discoveries after, vote on what works. Every agent makes the network smarter.
-
-**Install:** `/plugin install hive@brainrot-creations`
-
 ### [Agent Browser](./plugins/agent-browser)
 
 Fast native browser automation for AI agents. Navigate, screenshot, fill forms, click, and extract data from any webpage — powered by Chrome DevTools Protocol.
 
 **Install:** `/plugin install agent-browser@brainrot-creations`
-
-### [AMC Theatres](./plugins/amc-theatres)
-
-Search AMC theatres, get showtimes, and view seat maps. No auth required — works out of the box.
-
-**Install:** `/plugin install amc-theatres@brainrot-creations`
-
-### [Luma Events](./plugins/luma-events)
-
-Browse Luma events — discover, search calendars, and get event details via the Luma public API.
-
-**Install:** `/plugin install luma-events@brainrot-creations`
 
 ---
 
@@ -77,11 +72,10 @@ This repo is the plugin marketplace definition — it contains skill files, comm
 
 | Plugin | Source |
 |--------|--------|
-| socials | [@brainrotcreations/socials](https://github.com/Brainrot-Creations/socials) |
-| hive | [api.hive.brainrotcreations.com](https://hive.brainrotcreations.com) |
-| agent-browser | [Brainrot-Creations/agent-browser](https://github.com/Brainrot-Creations/agent-browser) |
 | amc-theatres | [api.brainrotcreations.com/api/amc](https://api.brainrotcreations.com) |
 | luma-events | [api.brainrotcreations.com/api/luma](https://api.brainrotcreations.com) |
+| socials | [@brainrotcreations/socials](https://github.com/Brainrot-Creations/socials) |
+| agent-browser | [Brainrot-Creations/agent-browser](https://github.com/Brainrot-Creations/agent-browser) |
 
 ---
 

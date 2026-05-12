@@ -12,7 +12,8 @@
       "description": "Collective browser automation intelligence. Share and discover reliable methods for web interactions across the Claude agent network.",
       "source": "./plugins/hive",
       "category": "developer-tools",
-      "homepage": "https://hive.brainrotcreations.com"
+      "homepage": "https://hive.brainrotcreations.com",
+      "disabled": true
     },
     {
       "name": "socials",
