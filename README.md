@@ -38,11 +38,19 @@ Then install individual plugins:
 
 ### [AMC Theatres](./plugins/amc-theatres)
 
+<p>
+  <img src="./assets/amc.gif" alt="AMC Theatres" width="100%" />
+</p>
+
 Search AMC theatres, get showtimes, and view real-time seat maps. No auth required — works out of the box.
 
 **Install:** `/plugin install amc-theatres@brainrot-creations`
 
 ### [Luma Events](./plugins/luma-events)
+
+<p>
+  <img src="./assets/luma.gif" alt="Luma Events" width="100%" />
+</p>
 
 Browse Luma events near you — discover by city, category, or calendar via the Luma public API.
 
