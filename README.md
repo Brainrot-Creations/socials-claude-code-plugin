@@ -74,17 +74,4 @@ Fast native browser automation for AI agents. Navigate, screenshot, fill forms, 
 
 ---
 
-## For Developers
-
-This repo is the plugin marketplace definition — it contains skill files, commands, and MCP config for each plugin. The underlying MCP servers live in their own packages:
-
-| Plugin | Source |
-|--------|--------|
-| amc-theatres | [api.brainrotcreations.com/api/amc](https://api.brainrotcreations.com) |
-| luma-events | [api.brainrotcreations.com/api/luma](https://api.brainrotcreations.com) |
-| socials | [@brainrotcreations/socials](https://github.com/Brainrot-Creations/socials) |
-| agent-browser | [Brainrot-Creations/agent-browser](https://github.com/Brainrot-Creations/agent-browser) |
-
----
-
 [MIT License](./LICENSE) · [contact@brainrotcreations.com](mailto:contact@brainrotcreations.com)
