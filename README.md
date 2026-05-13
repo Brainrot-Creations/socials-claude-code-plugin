@@ -26,6 +26,9 @@ Then install individual plugins:
 /plugin install luma-events@brainrot-creations
 /plugin install socials@brainrot-creations
 /plugin install agent-browser@brainrot-creations
+/plugin install cursor-agents@brainrot-creations
+/plugin install codex@brainrot-creations
+/plugin install openai@brainrot-creations
 ```
 
 ```
@@ -71,6 +74,24 @@ Connect Claude to X, LinkedIn, and Reddit via the Socials browser extension. Pos
 Fast native browser automation for AI agents. Navigate, screenshot, fill forms, click, and extract data from any webpage — powered by Chrome DevTools Protocol.
 
 **Install:** `/plugin install agent-browser@brainrot-creations`
+
+### [Cursor Agents](./plugins/cursor-agents)
+
+Delegate coding tasks to Cursor agents directly from Claude. Fire tasks in the background, collect results when done — parallel AI coding without the context switch.
+
+**Install:** `/plugin install cursor-agents@brainrot-creations`
+
+### [Codex](./plugins/codex)
+
+Hand off tasks to OpenAI Codex CLI from Claude. Same delegation pattern as Cursor Agents — submit a task, get back the output.
+
+**Install:** `/plugin install codex@brainrot-creations`
+
+### [OpenAI](./plugins/openai)
+
+Call GPT-4o, o1, o3-mini, and DALL-E directly from Claude Code. Chat completions and image generation in one plugin.
+
+**Install:** `/plugin install openai@brainrot-creations`
 
 ---
 
