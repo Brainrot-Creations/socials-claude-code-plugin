@@ -71,17 +71,29 @@ Connect Claude to X, LinkedIn, and Reddit via the Socials browser extension. Pos
 
 ### [Codex](./plugins/codex)
 
+<p>
+  <img src="./assets/agents.gif" alt="Codex" width="100%" />
+</p>
+
 Hand off tasks to OpenAI Codex CLI from Claude. Same delegation pattern as Cursor Agents — submit a task, get back the output.
 
 **Install:** `/plugin install codex@brainrot-creations`
 
 ### [OpenAI](./plugins/openai)
 
+<p>
+  <img src="./assets/agents.gif" alt="OpenAI" width="100%" />
+</p>
+
 Call GPT-4o, o1, o3-mini, and DALL-E directly from Claude Code. Chat completions and image generation in one plugin.
 
 **Install:** `/plugin install openai@brainrot-creations`
 
 ### [Cursor Agents](./plugins/cursor-agents)
+
+<p>
+  <img src="./assets/agents.gif" alt="Cursor Agents" width="100%" />
+</p>
 
 Delegate coding tasks to Cursor agents directly from Claude. Fire tasks in the background, collect results when done — parallel AI coding without the context switch.
 
